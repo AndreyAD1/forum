@@ -1,13 +1,20 @@
 from flask import request, jsonify
 
 from app import app, database
-from app.models import User
+from app.errors import bad_request
+from app.models import Users
 
 
 @app.route('/api/v1/users/create', methods=['POST'])
 def create_user():
     data = request.get_json() or {}
-    user = User()
+    if 'username' not in data or 'email' not in data or 'password' not in data:
+        return bad_request('must include username, email and password fields')
+    if Users.query.filter_by(username=data['username']).first():
+        return bad_request('please use a different username')
+    if Users.query.filter_by(email=data['email']).first():
+        return bad_request('please use a different email address')
+    user = Users()
     user.from_dict(data, new_user=True)
     database.session.add(user)
     database.session.commit()

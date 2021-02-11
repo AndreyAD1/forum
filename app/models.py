@@ -3,7 +3,7 @@ from werkzeug.security import generate_password_hash
 from app import database
 
 
-class User(database.Model):
+class Users(database.Model):
     id = database.Column(database.Integer, primary_key=True)
     username = database.Column(database.String(64), index=True, unique=True)
     email = database.Column(database.String(120), index=True, unique=True)
