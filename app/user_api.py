@@ -35,8 +35,8 @@ def create_user():
     VALUES ('{user.username}', '{user.email}', '{user.password_hash}') 
     RETURNING users.id
     """
-    database.session.execute(insert_command)
-    database.session.commit()
-    response = jsonify({})
+    query_result = database.session.execute(insert_command)
+    new_user_id = [r for r in query_result][0][0]
+    response = jsonify({'user_id': new_user_id})
     response.status_code = 201
     return response
