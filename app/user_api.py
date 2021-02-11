@@ -16,7 +16,13 @@ def create_user():
         return bad_request('please use a different email address')
     user = Users()
     user.from_dict(data, new_user=True)
-    database.session.add(user)
+    insert_template = "INSERT INTO users (username, email, password_hash) VALUES ('{}', '{}', '{}') RETURNING users.id"
+    insert_command = insert_template.format(
+        user.username,
+        user.email,
+        user.password_hash
+    )
+    database.session.execute(insert_command)
     database.session.commit()
     response = jsonify({})
     response.status_code = 201
