@@ -1,7 +1,7 @@
 from flask import request, jsonify
 
 from app import app, database
-from app.errors import bad_request
+from app.errors import bad_request, error_response
 from app.models import Users
 
 
@@ -36,7 +36,23 @@ def create_user():
     RETURNING users.id
     """
     query_result = database.session.execute(insert_command)
+    database.session.commit()
     new_user_id = [r for r in query_result][0][0]
     response = jsonify({'user_id': new_user_id})
     response.status_code = 201
+    return response
+
+
+@app.route('/api/v1/users/<int:user_id>', methods=['GET'])
+def get_user(user_id):
+    user_query = f"""SELECT users.id, users.username, users.email 
+    FROM users WHERE users.id = '{user_id}'
+    """
+    query_result_proxy = database.session.execute(user_query)
+    row_proxies = [r for r in query_result_proxy]
+    if len(row_proxies) == 1:
+        response = jsonify({k: v for k, v in row_proxies[0].items()})
+    else:
+        response = error_response(404)
+
     return response
