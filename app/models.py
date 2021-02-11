@@ -1,3 +1,5 @@
+from werkzeug.security import generate_password_hash
+
 from app import database
 
 
@@ -9,3 +11,13 @@ class User(database.Model):
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
+
+    def from_dict(self, data, new_user=False):
+        for field in ['username', 'email']:
+            if field in data:
+                setattr(self, field, data[field])
+        if new_user and 'password' in data:
+            self.set_password(data['password'])
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
