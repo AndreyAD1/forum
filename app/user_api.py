@@ -5,24 +5,24 @@ from app.errors import bad_request, error_response
 from app.models import Users
 
 
+A_USER_QUERY_TEMPLATE = """
+SELECT users.id FROM users WHERE users.{} = '{}' LIMIT 1
+"""
+
+
 @app.route('/api/v1/users/create', methods=['POST'])
 def create_user():
     data = request.get_json() or {}
     if 'username' not in data or 'email' not in data or 'password' not in data:
         return bad_request('must include username, email and password fields')
-    name_query = f"""
-    SELECT users.id
-    FROM users WHERE users.username = '{data['username']}' LIMIT 1
-    """
+
+    name_query = A_USER_QUERY_TEMPLATE.format('username', data['username'])
     query_result_proxy = database.session.execute(name_query)
     query_result = [r for r in query_result_proxy]
     if query_result:
         return bad_request('please use a different username')
 
-    email_query = f"""
-    SELECT users.id
-    FROM users WHERE users.email = '{data['email']}' LIMIT 1
-    """
+    email_query = A_USER_QUERY_TEMPLATE.format('email', data['email'])
     query_result_proxy = database.session.execute(email_query)
     query_result = [r for r in query_result_proxy]
     if query_result:
@@ -43,16 +43,59 @@ def create_user():
     return response
 
 
-@app.route('/api/v1/users/<int:user_id>', methods=['GET'])
-def get_user(user_id):
+def get_json_user(user_id):
     user_query = f"""SELECT users.id, users.username, users.email 
     FROM users WHERE users.id = '{user_id}'
     """
     query_result_proxy = database.session.execute(user_query)
     row_proxies = [r for r in query_result_proxy]
     if len(row_proxies) == 1:
-        response = jsonify({k: v for k, v in row_proxies[0].items()})
+        json_user = {k: v for k, v in row_proxies[0].items()}
+    else:
+        json_user = {}
+
+    return json_user
+
+
+@app.route('/api/v1/users/<int:user_id>', methods=['GET'])
+def get_user(user_id):
+    json_user = get_json_user(user_id)
+    if json_user:
+        response = jsonify(json_user)
     else:
         response = error_response(404)
-
     return response
+
+
+@app.route('/api/v1/users/<int:user_id>', methods=['PUT'])
+def update_user(user_id):
+    json_user = get_json_user(user_id)
+    if not json_user:
+        return error_response(404)
+    data = request.get_json() or {}
+
+    fields_to_update = []
+    if 'username' in data:
+        name_query = A_USER_QUERY_TEMPLATE.format('username', data['username'])
+        query_result_proxy = database.session.execute(name_query)
+        new_username_is_not_unique = bool([r for r in query_result_proxy])
+        new_username = data['username'] != json_user['username']
+        if new_username and new_username_is_not_unique:
+            return bad_request('please use a different username')
+        fields_to_update.append(('username', data['username']))
+
+    if 'email' in data:
+        name_query = A_USER_QUERY_TEMPLATE.format('email', data['email'])
+        query_result_proxy = database.session.execute(name_query)
+        new_mail_is_not_unique = bool([r for r in query_result_proxy])
+        new_email = data['email'] != json_user['email']
+        if new_email and new_mail_is_not_unique:
+            return bad_request('please use a different email address')
+        fields_to_update.append(('email', data['email']))
+
+    update_query_template = "UPDATE users SET {} WHERE users.id = {}"
+    updating_set = ','.join([f"{f} = '{v}'" for f, v in fields_to_update])
+    update_query = update_query_template.format(updating_set, user_id)
+    database.session.execute(update_query)
+    database.session.commit()
+    return jsonify({})
