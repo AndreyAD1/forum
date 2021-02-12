@@ -91,5 +91,6 @@ def update_user(user_id):
     updating_set = ','.join([f"{f} = '{v}'" for f, v in fields_to_update])
     update_query = update_query_template.format(updating_set, user_id)
     database.session.execute(update_query)
+    updated_user = get_json_user(user_id)
     database.session.commit()
-    return jsonify({})
+    return jsonify(updated_user)
