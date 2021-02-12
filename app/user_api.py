@@ -75,23 +75,17 @@ def update_user(user_id):
     data = request.get_json() or {}
 
     fields_to_update = []
-    if 'username' in data:
-        name_query = A_USER_QUERY_TEMPLATE.format('username', data['username'])
-        query_result_proxy = database.session.execute(name_query)
-        new_username_is_not_unique = bool([r for r in query_result_proxy])
-        new_username = data['username'] != json_user['username']
-        if new_username and new_username_is_not_unique:
-            return bad_request('please use a different username')
-        fields_to_update.append(('username', data['username']))
-
-    if 'email' in data:
-        name_query = A_USER_QUERY_TEMPLATE.format('email', data['email'])
-        query_result_proxy = database.session.execute(name_query)
-        new_mail_is_not_unique = bool([r for r in query_result_proxy])
-        new_email = data['email'] != json_user['email']
-        if new_email and new_mail_is_not_unique:
-            return bad_request('please use a different email address')
-        fields_to_update.append(('email', data['email']))
+    for field_name in ['username', 'email']:
+        if field_name in data:
+            name_query = A_USER_QUERY_TEMPLATE.format(
+                field_name,
+                data[field_name]
+            )
+            query_result_proxy = database.session.execute(name_query)
+            new_username_is_not_unique = bool([r for r in query_result_proxy])
+            if new_username_is_not_unique:
+                return bad_request(f'please use a different {field_name}')
+            fields_to_update.append((field_name, data[field_name]))
 
     update_query_template = "UPDATE users SET {} WHERE users.id = {}"
     updating_set = ','.join([f"{f} = '{v}'" for f, v in fields_to_update])
