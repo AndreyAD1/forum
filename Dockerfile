@@ -4,10 +4,12 @@ RUN adduser -D forum
 
 WORKDIR /home/forum
 
-COPY requirements.txt requirements.txt
-RUN python -m venv venv
-RUN venv/bin/pip install -r requirements.txt
-RUN venv/bin/pip install gunicorn
+COPY requirements-prod.txt .
+RUN  apk add --no-cache postgresql-libs && \
+     apk add --no-cache --virtual .build-deps gcc musl-dev postgresql-dev && \
+     python -m venv venv && \
+     venv/bin/pip install -r requirements-prod.txt && \
+     apk --purge del .build-deps
 
 COPY app app
 COPY migrations migrations
