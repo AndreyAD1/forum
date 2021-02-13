@@ -1,0 +1,21 @@
+services:
+  forum:
+    build: .
+    depends_on:
+      - forum_db
+    ports:
+      - "8000:5000"
+    environment:
+      DATABASE_URL: postgresql://$FORUM_DB_USER:$FORUM_DB_PASSWORD@forum_db/forum
+  forum_db:
+    container_name: forum_db
+    build:
+      context: ./db_config
+      args:
+        - forum_db_user=$FORUM_DB_USER
+        - forum_db_password=$FORUM_DB_PASSWORD
+    environment:
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+      PGDATA: $PGDATA
+    volumes:
+      - $FORUM_DB_PATH:$PGDATA
