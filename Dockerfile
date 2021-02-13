@@ -16,7 +16,7 @@ COPY migrations migrations
 COPY forum.py config.py boot.sh ./
 RUN chmod +x boot.sh
 
-ENV FLASK_APP forum.py
+ENV FLASK_APP=forum.py
 
 RUN chown -R forum:forum ./
 USER forum
