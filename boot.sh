@@ -1,4 +1,6 @@
 #!/bin/sh
+set -e
+
 . venv/bin/activate
 while true; do
     flask db upgrade

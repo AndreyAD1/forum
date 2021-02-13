@@ -1,2 +1,26 @@
-# forum
-Training project providing a common message board API
+# Forum API
+Сервис, имитирующий API интернет-форума. Проект написан на Python 3.9, 
+основной фреймворк - Flask, база данных - PostgreSQL 13.
+
+## Быстрый запуск
+Перед запуском сервиса необходимо установить [docker-compose](https://docs.docker.com/compose/) и
+назначить следующие переменные окружения:
+```shell
+# логин роли Postgres, от имени которой будут выполняться операции с БД
+FORUM_DB_USER
+# пароль роли Postgres, от имени которой будут выполняться операции с БД
+FORUM_DB_PASSWORD
+# путь, где будет храниться БД сервиса на хосте
+FORUM_DB_PATH
+# путь, где будет храниться БД сервиса в контейнере Postgres
+PGDATA
+# пароль суперюзера Postgres
+POSTGRES_PASSWORD
+```
+Запуск выполняется командой:
+```shell
+docker-compose up --build -d
+```
+После запуска поднимутся два контейнера: `forum_db` - сервер БД PostgreSQL и 
+`forum` - сервис API.
+Сервис будет слушать запросы по адресу `http://0.0.0.0:8000/api/v1`.

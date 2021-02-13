@@ -1,5 +1,6 @@
 services:
   forum:
+    container_name: forum
     build: .
     depends_on:
       - forum_db
