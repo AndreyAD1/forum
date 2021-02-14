@@ -75,6 +75,7 @@ def test_get_user():
     )
     logger.info(f'Get response: {response.text}')
     token = response.json()['token']
+
     headers = {'Authorization': f'Bearer {token}'}
     response = requests.get(
         f'http://127.0.0.1:5000/api/v1/users/{user_id}',
@@ -85,6 +86,48 @@ def test_get_user():
         'id': user_id,
         'username': user_info['username'],
         'email': user_info['email']
+    }
+    assert response.status_code == 200
+    assert response.json() == expected_user
+
+
+def test_update_user():
+    fake = Faker()
+    user_info = {
+        'username': fake.name(),
+        'email': fake.email(),
+        'password': 'pass'
+    }
+    logger.info(f'Create the user: {user_info}')
+    response = requests.post(
+        'http://127.0.0.1:5000/api/v1/users/create',
+        json=user_info
+    )
+    logger.info(f'Get response: {response.text}')
+    user_id = response.json()['user_id']
+
+    response = requests.post(
+        f'http://127.0.0.1:5000/api/v1/tokens',
+        auth=(user_info['username'], user_info['password'])
+    )
+    logger.info(f'Get response: {response.text}')
+    token = response.json()['token']
+
+    headers = {'Authorization': f'Bearer {token}'}
+    fields_to_update = {
+        'username': fake.name(),
+        'email': fake.email(),
+    }
+    response = requests.put(
+        f'http://127.0.0.1:5000/api/v1/users/{user_id}',
+        headers=headers,
+        json=fields_to_update
+    )
+    logger.info(f'Get response: {response.text}')
+    expected_user = {
+        'id': user_id,
+        'username': fields_to_update['username'],
+        'email': fields_to_update['email']
     }
     assert response.status_code == 200
     assert response.json() == expected_user
