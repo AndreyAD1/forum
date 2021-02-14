@@ -12,12 +12,13 @@ SECONDS_PER_DAY = 86400
 class Users(database.Model):
     id = database.Column(database.Integer, primary_key=True)
     username = database.Column(database.String(64), index=True, unique=True)
-    common_name = database.Column(database.String(64), index=True)
-    email = database.Column(database.String(120), index=True)
+    common_name = database.Column(database.String(64))
+    email = database.Column(database.String(120))
     password_hash = database.Column(database.String(128))
     token = database.Column(database.String(32), index=True, unique=True)
     token_expiration = database.Column(database.DateTime)
     posts = database.relationship('Post', backref='author', lazy='dynamic')
+    threads = database.relationship('Thread', backref='author', lazy='dynamic')
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
@@ -71,7 +72,31 @@ class Post(database.Model):
         database.Integer,
         database.ForeignKey('users.id')
     )
+    thread_id = database.Column(
+        database.Integer,
+        database.ForeignKey('thread.id')
+    )
     deleted = database.Column(database.Boolean, default=False)
 
     def __repr__(self):
         return '<Post {}>'.format(self.text[:20])
+
+
+class Thread(database.Model):
+    id = database.Column(database.Integer, primary_key=True)
+    name = database.Column(database.String(64))
+    short_name = database.Column(database.String(32), unique=True)
+    author_id = database.Column(
+        database.Integer,
+        database.ForeignKey('users.id')
+    )
+    creation_timestamp = database.Column(
+        database.DateTime,
+        index=True,
+        default=datetime.utcnow
+    )
+    text = database.Column(database.String(1000))
+    posts = database.relationship('Post', backref='thread', lazy='dynamic')
+
+    def __repr__(self):
+        return '<Thread {}>'.format(self.name)
