@@ -13,6 +13,7 @@ SELECT users.id FROM users WHERE users.{} = '{}' LIMIT 1
 
 @app.route('/api/v1/users/create', methods=['POST'])
 def create_user():
+    app.logger.debug(f'Receive request: {request.data}')
     data = request.get_json() or {}
     if 'username' not in data or 'email' not in data or 'password' not in data:
         return bad_request('must include username, email and password fields')
