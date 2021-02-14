@@ -18,7 +18,12 @@ class Users(database.Model):
     token = database.Column(database.String(32), index=True, unique=True)
     token_expiration = database.Column(database.DateTime)
     posts = database.relationship('Post', backref='author', lazy='dynamic')
-    threads = database.relationship('Thread', backref='author', lazy='dynamic')
+    threads = database.relationship(
+        'Thread',
+        backref='creator',
+        lazy='dynamic'
+    )
+    forums = database.relationship('Forum', backref='creator', lazy='dynamic')
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
@@ -85,8 +90,8 @@ class Post(database.Model):
 class Thread(database.Model):
     id = database.Column(database.Integer, primary_key=True)
     name = database.Column(database.String(64))
-    short_name = database.Column(database.String(32), unique=True)
-    author_id = database.Column(
+    short_name = database.Column(database.String(32))
+    creator_id = database.Column(
         database.Integer,
         database.ForeignKey('users.id')
     )
@@ -97,6 +102,21 @@ class Thread(database.Model):
     )
     text = database.Column(database.String(1000))
     posts = database.relationship('Post', backref='thread', lazy='dynamic')
+    forum_id = database.Column(
+        database.Integer,
+        database.ForeignKey('forum.id')
+    )
 
     def __repr__(self):
         return '<Thread {}>'.format(self.name)
+
+
+class Forum(database.Model):
+    id = database.Column(database.Integer, primary_key=True)
+    name = database.Column(database.String(64), index=True, unique=True)
+    short_name = database.Column(database.String(32), index=True, unique=True)
+    creator_id = database.Column(
+        database.Integer,
+        database.ForeignKey('users.id')
+    )
+    threads = database.relationship('Thread', backref='forum', lazy='dynamic')
