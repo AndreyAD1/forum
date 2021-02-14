@@ -13,4 +13,4 @@ if app.config['VERBOSE']:
 database = SQLAlchemy(app, engine_options={'echo': 'debug'})
 migrate = Migrate(app, database)
 
-from app import routes, models, user_api, api_auth, api_tokens
+from app import routes, models, user_api, api_auth, api_tokens, post_api
