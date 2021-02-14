@@ -17,3 +17,4 @@ Werkzeug==1.0.1
 flask-httpauth==4.2.0
 pytest==6.2.2
 requests==2.25.1
+Faker==6.1.1

@@ -1,17 +1,25 @@
+import logging
+
+from faker import Faker
 import requests
 
 
+logger = logging.getLogger(__file__)
+
+
 def test_create_user():
+    fake = Faker()
     user_info = {
-        'username': 'test_user_3',
-        'email': 'test_user_3@email.ru',
-        'password': 'test_password_3'
+        'username': fake.name(),
+        'email': fake.email(),
+        'password': 'pass'
     }
+    logger.info(f'Create the user: {user_info}')
     response = requests.post(
         'http://127.0.0.1:5000/api/v1/users/create',
         json=user_info
     )
-    print(response.text)
+    logger.info(f'Get response: {response.text}')
     assert response.status_code == 201
     response_json = response.json()
     assert len(response_json) == 1
