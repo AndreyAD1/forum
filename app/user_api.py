@@ -95,7 +95,8 @@ def update_user(user_id):
     )
     update_query = update_query_template.format(updating_set, user_id)
     database.session.execute(update_query)
-    updated_user = get_single_json_entity(FULL_USER_QUERY_TEMPLATE.format(user_id))
+    query = FULL_USER_QUERY_TEMPLATE.format(user_id)
+    updated_user = get_single_json_entity(query)
     database.session.commit()
     return jsonify(updated_user)
 
@@ -109,7 +110,10 @@ def get_user_posts(user_id):
     if not json_user:
         return error_response(404)
 
-    posts_query = f"SELECT * FROM post WHERE post.user_id = {user_id}"
+    posts_query = f"""
+    SELECT post.id, post.text, post.creation_timestamp, post.user_id FROM post 
+    WHERE post.user_id = {user_id}
+    """
     query_result_proxy = database.session.execute(posts_query)
     database.session.commit()
     posts = [{k: v for k, v in row.items()} for row in query_result_proxy]
