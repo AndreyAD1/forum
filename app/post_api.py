@@ -36,7 +36,7 @@ def create_post():
 def get_post(post_id):
     post_query = f"""
     SELECT 
-    post.id, post.text, post_creation_timestamp, post.user_id 
+    post.id, post.text, post.creation_timestamp, post.user_id 
     FROM post WHERE post.id = '{post_id}'
     """
     json_user = get_json_entity(post_query)
