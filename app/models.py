@@ -1,3 +1,6 @@
+import base64
+from datetime import datetime, timedelta
+import os
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from app import database
@@ -8,6 +11,8 @@ class Users(database.Model):
     username = database.Column(database.String(64), index=True, unique=True)
     email = database.Column(database.String(120), index=True, unique=True)
     password_hash = database.Column(database.String(128))
+    token = database.Column(database.String(32), index=True, unique=True)
+    token_expiration = database.Column(database.DateTime)
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
@@ -24,3 +29,12 @@ class Users(database.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+    def get_token(self, expires_in=3600):
+        now = datetime.utcnow()
+        if self.token and self.token_expiration > now + timedelta(seconds=60):
+            return self.token
+        self.token = base64.b64encode(os.urandom(24)).decode('utf-8')
+        self.token_expiration = now + timedelta(seconds=expires_in)
+        database.session.add(self)
+        return self.token
