@@ -1,4 +1,5 @@
 import logging
+import random
 
 from faker import Faker
 import requests
@@ -10,7 +11,7 @@ logger = logging.getLogger(__file__)
 def test_create_user():
     fake = Faker()
     user_info = {
-        'username': fake.first_name(),
+        'username': fake.first_name() + str(random.randint(1, 1000)),
         'common_name': fake.name(),
         'email': fake.email(),
         'password': 'pass'
@@ -32,7 +33,7 @@ def test_create_user():
 def test_get_token():
     fake = Faker()
     user_info = {
-        'username': fake.first_name(),
+        'username': fake.first_name() + str(random.randint(1, 1000)),
         'common_name': fake.name(),
         'email': fake.email(),
         'password': 'pass'
@@ -59,7 +60,7 @@ def test_get_token():
 def test_get_user():
     fake = Faker()
     user_info = {
-        'username': fake.first_name(),
+        'username': fake.first_name() + str(random.randint(1, 1000)),
         'common_name': fake.name(),
         'email': fake.email(),
         'password': 'pass'
@@ -98,7 +99,7 @@ def test_get_user():
 def test_update_user():
     fake = Faker()
     user_info = {
-        'username': fake.first_name(),
+        'username': fake.first_name() + str(random.randint(1, 1000)),
         'common_name': fake.name(),
         'email': fake.email(),
         'password': 'pass'
@@ -120,7 +121,7 @@ def test_update_user():
 
     headers = {'Authorization': f'Bearer {token}'}
     fields_to_update = {
-        'username': fake.first_name(),
+        'username': fake.first_name() + str(random.randint(1, 1000)),
         'common_name': fake.name(),
         'email': fake.email(),
     }

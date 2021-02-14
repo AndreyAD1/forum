@@ -2,12 +2,18 @@ from flask import abort, request, jsonify, url_for
 
 from app import app, database
 from app.api_auth import token_auth
+from app.api_tools import get_json_entity
 from app.errors import bad_request, error_response
 from app.models import Users
 
 
 A_USER_QUERY_TEMPLATE = """
 SELECT users.id FROM users WHERE users.{} = '{}' LIMIT 1
+"""
+FULL_USER_QUERY_TEMPLATE = """
+SELECT 
+users.id, users.username, users.email, users.common_name 
+FROM users WHERE users.id = '{}'
 """
 
 
@@ -42,26 +48,10 @@ def create_user():
     return response
 
 
-def get_json_user(user_id):
-    user_query = f"""
-    SELECT 
-    users.id, users.username, users.email, users.common_name 
-    FROM users WHERE users.id = '{user_id}'
-    """
-    query_result_proxy = database.session.execute(user_query)
-    row_proxies = [r for r in query_result_proxy]
-    if len(row_proxies) == 1:
-        json_user = {k: v for k, v in row_proxies[0].items()}
-    else:
-        json_user = {}
-
-    return json_user
-
-
 @app.route('/api/v1/users/<int:user_id>', methods=['GET'])
 @token_auth.login_required
 def get_user(user_id):
-    json_user = get_json_user(user_id)
+    json_user = get_json_entity(FULL_USER_QUERY_TEMPLATE.format(user_id))
     if json_user:
         response = jsonify(json_user)
     else:
@@ -75,7 +65,7 @@ def update_user(user_id):
     if token_auth.current_user().id != user_id:
         abort(403)
 
-    json_user = get_json_user(user_id)
+    json_user = get_json_entity(FULL_USER_QUERY_TEMPLATE.format(user_id))
     if not json_user:
         return error_response(404)
     request_data = request.get_json() or {}
@@ -100,6 +90,6 @@ def update_user(user_id):
     )
     update_query = update_query_template.format(updating_set, user_id)
     database.session.execute(update_query)
-    updated_user = get_json_user(user_id)
+    updated_user = get_json_entity(FULL_USER_QUERY_TEMPLATE.format(user_id))
     database.session.commit()
     return jsonify(updated_user)

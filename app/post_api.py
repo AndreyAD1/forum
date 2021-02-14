@@ -4,8 +4,8 @@ from flask import request, jsonify
 
 from app import app, database
 from app.api_auth import token_auth
-from app.errors import bad_request
-from app.models import Post
+from app.api_tools import get_json_entity
+from app.errors import bad_request, error_response
 
 
 @app.route('/api/v1/posts/create', methods=['POST'])
@@ -17,12 +17,10 @@ def create_post():
     if not post_text:
         return bad_request('must include a field "text"')
 
-    post = Post()
-    post.text = post_text
-    post.user_id = token_auth.current_user().id
+    author_id = token_auth.current_user().id
     insert_post_query = f"""
     INSERT INTO post (text, creation_timestamp, user_id) 
-    VALUES ('{post.text}', '{datetime.utcnow()}', '{post.user_id}') 
+    VALUES ('{post_text}', '{datetime.utcnow()}', '{author_id}') 
     RETURNING post.id
     """
     query_result = database.session.execute(insert_post_query)
@@ -31,3 +29,20 @@ def create_post():
     response = jsonify({'post_id': new_post_id})
     response.status_code = 201
     return response
+
+
+@app.route('/api/v1/posts/<int:post_id>', methods=['GET'])
+@token_auth.login_required
+def get_post(post_id):
+    post_query = f"""
+    SELECT 
+    post.id, post.text, post_creation_timestamp, post.user_id 
+    FROM post WHERE post.id = '{post_id}'
+    """
+    json_user = get_json_entity(post_query)
+    if json_user:
+        response = jsonify(json_user)
+    else:
+        response = error_response(404)
+    return response
+
