@@ -1,6 +1,7 @@
-from flask import request, jsonify
+from flask import abort, request, jsonify
 
 from app import app, database
+from app.api_auth import token_auth
 from app.errors import bad_request, error_response
 from app.models import Users
 
@@ -58,6 +59,7 @@ def get_json_user(user_id):
 
 
 @app.route('/api/v1/users/<int:user_id>', methods=['GET'])
+@token_auth.login_required
 def get_user(user_id):
     json_user = get_json_user(user_id)
     if json_user:
@@ -68,7 +70,11 @@ def get_user(user_id):
 
 
 @app.route('/api/v1/users/<int:user_id>', methods=['PUT'])
+@token_auth.login_required
 def update_user(user_id):
+    if token_auth.current_user().id != user_id:
+        abort(403)
+
     json_user = get_json_user(user_id)
     if not json_user:
         return error_response(404)
@@ -86,6 +92,9 @@ def update_user(user_id):
             if new_username_is_not_unique:
                 return bad_request(f'please use a different {field_name}')
             fields_to_update.append((field_name, data[field_name]))
+
+    if not fields_to_update:
+        return bad_request('must include username or/and email')
 
     update_query_template = "UPDATE users SET {} WHERE users.id = {}"
     updating_set = ','.join([f"{f} = '{v}'" for f, v in fields_to_update])

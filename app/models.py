@@ -38,3 +38,10 @@ class Users(database.Model):
         self.token_expiration = now + timedelta(seconds=expires_in)
         database.session.add(self)
         return self.token
+
+    @staticmethod
+    def check_token(token):
+        user = Users.query.filter_by(token=token).first()
+        if user is None or user.token_expiration < datetime.utcnow():
+            return None
+        return user
