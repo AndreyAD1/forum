@@ -113,7 +113,7 @@ def get_user_posts(user_id):
 
     posts_query = f"""
     SELECT post.id, post.text, post.creation_timestamp, post.user_id FROM post 
-    WHERE post.user_id = {user_id}
+    WHERE post.user_id = {user_id} AND post.deleted = FALSE
     """
     query_result_proxy = database.session.execute(posts_query)
     database.session.commit()

@@ -71,6 +71,7 @@ class Post(database.Model):
         database.Integer,
         database.ForeignKey('users.id')
     )
+    deleted = database.Column(database.Boolean, default=False)
 
     def __repr__(self):
         return '<Post {}>'.format(self.text[:20])
