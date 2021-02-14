@@ -17,6 +17,7 @@ class Users(database.Model):
     password_hash = database.Column(database.String(128))
     token = database.Column(database.String(32), index=True, unique=True)
     token_expiration = database.Column(database.DateTime)
+    posts = database.relationship('Post', backref='author', lazy='dynamic')
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
@@ -56,3 +57,20 @@ class Users(database.Model):
             print(f'Invalid token')
             return None
         return user
+
+
+class Post(database.Model):
+    id = database.Column(database.Integer, primary_key=True)
+    text = database.Column(database.String(1000))
+    creation_timestamp = database.Column(
+        database.DateTime,
+        index=True,
+        default=datetime.utcnow
+    )
+    user_id = database.Column(
+        database.Integer,
+        database.ForeignKey('users.id')
+    )
+
+    def __repr__(self):
+        return '<Post {}>'.format(self.body)
