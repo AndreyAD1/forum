@@ -2,7 +2,7 @@ from flask import abort, request, jsonify, url_for
 
 from app import app, database
 from app.api_auth import token_auth
-from app.api_tools import get_json_entity
+from app.api_tools import get_single_json_entity
 from app.errors import bad_request, error_response
 from app.models import Users
 
@@ -51,7 +51,9 @@ def create_user():
 @app.route('/api/v1/users/<int:user_id>', methods=['GET'])
 @token_auth.login_required
 def get_user(user_id):
-    json_user = get_json_entity(FULL_USER_QUERY_TEMPLATE.format(user_id))
+    json_user = get_single_json_entity(
+        FULL_USER_QUERY_TEMPLATE.format(user_id)
+    )
     if json_user:
         response = jsonify(json_user)
     else:
@@ -64,8 +66,8 @@ def get_user(user_id):
 def update_user(user_id):
     if token_auth.current_user().id != user_id:
         abort(403)
-
-    json_user = get_json_entity(FULL_USER_QUERY_TEMPLATE.format(user_id))
+    query = A_USER_QUERY_TEMPLATE.format('id', user_id)
+    json_user = get_single_json_entity(query)
     if not json_user:
         return error_response(404)
     request_data = request.get_json() or {}
@@ -78,7 +80,10 @@ def update_user(user_id):
         return bad_request('must include username, email or common_name')
 
     if 'username' in fields_to_update:
-        name_query = A_USER_QUERY_TEMPLATE.format('username', request_data['username'])
+        name_query = A_USER_QUERY_TEMPLATE.format(
+            'username',
+            request_data['username']
+        )
         query_result_proxy = database.session.execute(name_query)
         new_username_is_not_unique = bool([r for r in query_result_proxy])
         if new_username_is_not_unique:
@@ -90,6 +95,23 @@ def update_user(user_id):
     )
     update_query = update_query_template.format(updating_set, user_id)
     database.session.execute(update_query)
-    updated_user = get_json_entity(FULL_USER_QUERY_TEMPLATE.format(user_id))
+    updated_user = get_single_json_entity(FULL_USER_QUERY_TEMPLATE.format(user_id))
     database.session.commit()
     return jsonify(updated_user)
+
+
+@app.route('/api/v1/users/<int:user_id>/posts', methods=['GET'])
+@token_auth.login_required
+def get_user_posts(user_id):
+    app.logger.debug(f'Receive request: {request.data}')
+    query = A_USER_QUERY_TEMPLATE.format('id', user_id)
+    json_user = get_single_json_entity(query)
+    if not json_user:
+        return error_response(404)
+
+    posts_query = f"SELECT * FROM post WHERE post.user_id = {user_id}"
+    query_result_proxy = database.session.execute(posts_query)
+    database.session.commit()
+    posts = [{k: v for k, v in row.items()} for row in query_result_proxy]
+    response = jsonify({'user_posts': posts})
+    return response

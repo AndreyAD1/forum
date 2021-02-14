@@ -4,7 +4,7 @@ from flask import request, jsonify
 
 from app import app, database
 from app.api_auth import token_auth
-from app.api_tools import get_json_entity
+from app.api_tools import get_single_json_entity
 from app.errors import bad_request, error_response
 
 
@@ -39,9 +39,9 @@ def get_post(post_id):
     post.id, post.text, post.creation_timestamp, post.user_id 
     FROM post WHERE post.id = '{post_id}'
     """
-    json_user = get_json_entity(post_query)
-    if json_user:
-        response = jsonify(json_user)
+    json_post = get_single_json_entity(post_query)
+    if json_post:
+        response = jsonify(json_post)
     else:
         response = error_response(404)
     return response
