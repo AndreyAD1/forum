@@ -10,7 +10,7 @@ from app.errors import bad_request, error_response
 
 SINGLE_POST_QUERY_TEMPLATE = """
     SELECT 
-    post.id, post.text, post.creation_timestamp, post.user_id 
+    post.id, post.text, post.creation_timestamp, post.user_id
     FROM post WHERE post.id = '{}' AND post.deleted = FALSE
     """
 
@@ -53,7 +53,7 @@ def get_post(post_id):
 
 @app.route('/api/v1/posts/<int:post_id>', methods=['DELETE'])
 @token_auth.login_required
-def delete_post(post_id):
+def remove_post(post_id):
     post_query = SINGLE_POST_QUERY_TEMPLATE.format(post_id)
     json_post = get_single_json_entity(post_query)
     if not json_post:
@@ -66,6 +66,42 @@ def delete_post(post_id):
     """
     database.session.execute(delete_post_query)
     database.session.commit()
-    response = jsonify({'status': "OK"})
+    response = jsonify({'status': 'OK'})
+    return response
+
+
+@app.route('/api/v1/posts/restore', methods=['POST'])
+@token_auth.login_required
+def restore_post():
+    app.logger.debug(f'Receive request: {request.data}')
+    request_data = request.get_json() or {}
+    if 'post_id' not in request_data:
+        return bad_request('must include a post id')
+
+    post_id = request_data['post_id']
+    deleted_post_query = f"""
+    SELECT
+    post.id, post.text, post.creation_timestamp, post.user_id, post.deleted
+    FROM post WHERE post.id = '{post_id}'
+    """
+    query_result_proxy = database.session.execute(deleted_post_query)
+    row_proxies = [r for r in query_result_proxy]
+    if not row_proxies:
+        return bad_request(f'can not restore the post with id {post_id}')
+
+    json_post = {k: v for k, v in row_proxies[0].items()}
+    if token_auth.current_user().id != json_post['user_id']:
+        abort(403)
+
+    if not json_post['deleted']:
+        return bad_request(f'The post with id {post_id} is not deleted')
+
+    restore_post_query = f"""
+    UPDATE post SET deleted = FALSE WHERE post.id = '{post_id}'
+    """
+    database.session.execute(restore_post_query)
+    database.session.commit()
+    response = jsonify({'status': 'OK'})
+    response.headers['Location'] = url_for('get_post', post_id=post_id)
     return response
 
