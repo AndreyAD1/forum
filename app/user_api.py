@@ -24,17 +24,14 @@ def create_user():
     if query_result:
         return bad_request('please use a different username')
 
-    email_query = A_USER_QUERY_TEMPLATE.format('email', data['email'])
-    query_result_proxy = database.session.execute(email_query)
-    query_result = [r for r in query_result_proxy]
-    if query_result:
-        return bad_request('please use a different email address')
-
     user = Users()
     user.from_dict(data, new_user=True)
     insert_command = f"""
-    INSERT INTO users (username, email, password_hash) 
-    VALUES ('{user.username}', '{user.email}', '{user.password_hash}') 
+    INSERT INTO users (username, email, common_name, password_hash) 
+    VALUES (
+    '{user.username}', '{user.email}', '{user.common_name}',
+    '{user.password_hash}'
+    ) 
     RETURNING users.id
     """
     query_result = database.session.execute(insert_command)
@@ -46,7 +43,9 @@ def create_user():
 
 
 def get_json_user(user_id):
-    user_query = f"""SELECT users.id, users.username, users.email 
+    user_query = f"""
+    SELECT 
+    users.id, users.username, users.email, users.common_name 
     FROM users WHERE users.id = '{user_id}'
     """
     query_result_proxy = database.session.execute(user_query)
@@ -79,26 +78,26 @@ def update_user(user_id):
     json_user = get_json_user(user_id)
     if not json_user:
         return error_response(404)
-    data = request.get_json() or {}
+    request_data = request.get_json() or {}
 
-    fields_to_update = []
-    for field_name in ['username', 'email']:
-        if field_name in data:
-            name_query = A_USER_QUERY_TEMPLATE.format(
-                field_name,
-                data[field_name]
-            )
-            query_result_proxy = database.session.execute(name_query)
-            new_username_is_not_unique = bool([r for r in query_result_proxy])
-            if new_username_is_not_unique:
-                return bad_request(f'please use a different {field_name}')
-            fields_to_update.append((field_name, data[field_name]))
-
+    mutable_field_names = ['username', 'email', 'common_name']
+    fields_to_update = {
+        k: v for k, v in request_data.items() if k in mutable_field_names
+    }
     if not fields_to_update:
-        return bad_request('must include username or/and email')
+        return bad_request('must include username, email or common_name')
+
+    if 'username' in fields_to_update:
+        name_query = A_USER_QUERY_TEMPLATE.format('username', request_data['username'])
+        query_result_proxy = database.session.execute(name_query)
+        new_username_is_not_unique = bool([r for r in query_result_proxy])
+        if new_username_is_not_unique:
+            return bad_request(f'please use a different username')
 
     update_query_template = "UPDATE users SET {} WHERE users.id = {}"
-    updating_set = ','.join([f"{f} = '{v}'" for f, v in fields_to_update])
+    updating_set = ','.join(
+        [f"{f} = '{v}'" for f, v in fields_to_update.items()]
+    )
     update_query = update_query_template.format(updating_set, user_id)
     database.session.execute(update_query)
     updated_user = get_json_user(user_id)

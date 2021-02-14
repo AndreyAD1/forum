@@ -10,7 +10,8 @@ logger = logging.getLogger(__file__)
 def test_create_user():
     fake = Faker()
     user_info = {
-        'username': fake.name(),
+        'username': fake.first_name(),
+        'common_name': fake.name(),
         'email': fake.email(),
         'password': 'pass'
     }
@@ -31,7 +32,8 @@ def test_create_user():
 def test_get_token():
     fake = Faker()
     user_info = {
-        'username': fake.name(),
+        'username': fake.first_name(),
+        'common_name': fake.name(),
         'email': fake.email(),
         'password': 'pass'
     }
@@ -57,7 +59,8 @@ def test_get_token():
 def test_get_user():
     fake = Faker()
     user_info = {
-        'username': fake.name(),
+        'username': fake.first_name(),
+        'common_name': fake.name(),
         'email': fake.email(),
         'password': 'pass'
     }
@@ -85,6 +88,7 @@ def test_get_user():
     expected_user = {
         'id': user_id,
         'username': user_info['username'],
+        'common_name': user_info['common_name'],
         'email': user_info['email']
     }
     assert response.status_code == 200
@@ -94,7 +98,8 @@ def test_get_user():
 def test_update_user():
     fake = Faker()
     user_info = {
-        'username': fake.name(),
+        'username': fake.first_name(),
+        'common_name': fake.name(),
         'email': fake.email(),
         'password': 'pass'
     }
@@ -115,7 +120,8 @@ def test_update_user():
 
     headers = {'Authorization': f'Bearer {token}'}
     fields_to_update = {
-        'username': fake.name(),
+        'username': fake.first_name(),
+        'common_name': fake.name(),
         'email': fake.email(),
     }
     response = requests.put(
@@ -127,6 +133,7 @@ def test_update_user():
     expected_user = {
         'id': user_id,
         'username': fields_to_update['username'],
+        'common_name': fields_to_update['common_name'],
         'email': fields_to_update['email']
     }
     assert response.status_code == 200
