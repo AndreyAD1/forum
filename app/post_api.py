@@ -62,7 +62,7 @@ def delete_post(post_id):
         abort(403)
 
     delete_post_query = f"""
-    UPDATE post SET post.deleted = TRUE WHERE post.id = '{post_id}'
+    UPDATE post SET deleted = TRUE WHERE post.id = '{post_id}'
     """
     database.session.execute(delete_post_query)
     database.session.commit()
