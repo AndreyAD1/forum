@@ -45,6 +45,7 @@ def create_user():
     new_user_id = [r for r in query_result][0][0]
     response = jsonify({'user_id': new_user_id})
     response.status_code = 201
+    response.headers['Location'] = url_for('get_user', user_id=new_user_id)
     return response
 
 

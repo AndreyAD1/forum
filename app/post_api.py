@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from flask import request, jsonify
+from flask import request, jsonify, url_for
 
 from app import app, database
 from app.api_auth import token_auth
@@ -28,6 +28,7 @@ def create_post():
     new_post_id = [r for r in query_result][0][0]
     response = jsonify({'post_id': new_post_id})
     response.status_code = 201
+    response.headers['Location'] = url_for('get_post', post_id=new_post_id)
     return response
 
 
