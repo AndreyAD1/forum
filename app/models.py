@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from app import app, database
+from app import database
 
 
 SECONDS_PER_DAY = 86400
@@ -40,7 +40,12 @@ class Users(database.Model):
             return self.token
         self.token = base64.b64encode(os.urandom(24)).decode('utf-8')
         self.token_expiration = now + timedelta(seconds=expires_in)
-        database.session.add(self)
+        update_token_query = f"""
+        UPDATE users 
+        SET token='{self.token}', token_expiration='{self.token_expiration}'
+        WHERE users.id = '{self.id}'
+        """
+        database.session.execute(update_token_query)
         return self.token
 
     @staticmethod
