@@ -20,15 +20,19 @@ SINGLE_POST_QUERY_TEMPLATE = """
 def create_post():
     app.logger.debug(f'Receive request: {request.data}')
     request_data = request.get_json() or {}
-    post_text = request_data.get('text')
-    if not post_text:
-        return bad_request('must include a field "text"')
+    obligatory_fields = ['text', 'thread_id']
+    for field_name in obligatory_fields:
+        if field_name not in request_data:
+            return bad_request(f'must include the field "{field_name}"')
 
+    post_text = request_data['text']
+    thread_id = request_data['thread_id']
     author_id = token_auth.current_user().id
     insert_post_query = f"""
-    INSERT INTO post (text, creation_timestamp, user_id, deleted, 
-    deleted_by_thread) 
-    VALUES ('{post_text}', '{datetime.utcnow()}', '{author_id}', FALSE, FALSE) 
+    INSERT INTO post (text, creation_timestamp, user_id, thread_id, 
+    deleted, deleted_by_thread) 
+    VALUES ('{post_text}', '{datetime.utcnow()}', '{author_id}', '{thread_id}', 
+    FALSE, FALSE) 
     RETURNING post.id
     """
     query_result = database.session.execute(insert_post_query)
