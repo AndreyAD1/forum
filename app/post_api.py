@@ -26,8 +26,9 @@ def create_post():
 
     author_id = token_auth.current_user().id
     insert_post_query = f"""
-    INSERT INTO post (text, creation_timestamp, user_id, deleted) 
-    VALUES ('{post_text}', '{datetime.utcnow()}', '{author_id}', FALSE) 
+    INSERT INTO post (text, creation_timestamp, user_id, deleted, 
+    deleted_by_thread) 
+    VALUES ('{post_text}', '{datetime.utcnow()}', '{author_id}', FALSE, FALSE) 
     RETURNING post.id
     """
     query_result = database.session.execute(insert_post_query)
