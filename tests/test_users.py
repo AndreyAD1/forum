@@ -22,7 +22,7 @@ def test_create_user():
         'http://127.0.0.1:5000/api/v1/users/create',
         json=user_info
     )
-    logger.info(f'Get response: {response.text}')
+    logger.info(f'Receive response: {response.text}')
     assert response.status_code == 201
     response_json = response.json()
     assert len(response_json) == 1
@@ -44,13 +44,13 @@ def test_get_token():
         'http://127.0.0.1:5000/api/v1/users/create',
         json=user_info
     )
-    logger.info(f'Get response: {response.text}')
+    logger.info(f'Receive response: {response.text}')
 
     response = requests.post(
         f'http://127.0.0.1:5000/api/v1/tokens',
         auth=(user_info['username'], user_info['password'])
     )
-    logger.info(f'Get response: {response.text}')
+    logger.info(f'Receive response: {response.text}')
     assert response.status_code == 200
     response_json = response.json()
     assert len(response_json) == 1
@@ -71,14 +71,14 @@ def test_get_user():
         'http://127.0.0.1:5000/api/v1/users/create',
         json=user_info
     )
-    logger.info(f'Get response: {response.text}')
+    logger.info(f'Receive response: {response.text}')
     user_id = response.json()['user_id']
 
     response = requests.post(
         f'http://127.0.0.1:5000/api/v1/tokens',
         auth=(user_info['username'], user_info['password'])
     )
-    logger.info(f'Get response: {response.text}')
+    logger.info(f'Receive response: {response.text}')
     token = response.json()['token']
 
     headers = {'Authorization': f'Bearer {token}'}
@@ -86,7 +86,7 @@ def test_get_user():
         f'http://127.0.0.1:5000/api/v1/users/{user_id}',
         headers=headers
     )
-    logger.info(f'Get response: {response.text}')
+    logger.info(f'Receive response: {response.text}')
     expected_user = {
         'id': user_id,
         'username': user_info['username'],
@@ -110,14 +110,14 @@ def test_update_user():
         'http://127.0.0.1:5000/api/v1/users/create',
         json=user_info
     )
-    logger.info(f'Get response: {response.text}')
+    logger.info(f'Receive response: {response.text}')
     user_id = response.json()['user_id']
 
     response = requests.post(
         f'http://127.0.0.1:5000/api/v1/tokens',
         auth=(user_info['username'], user_info['password'])
     )
-    logger.info(f'Get response: {response.text}')
+    logger.info(f'Receive response: {response.text}')
     token = response.json()['token']
 
     headers = {'Authorization': f'Bearer {token}'}
@@ -131,7 +131,7 @@ def test_update_user():
         headers=headers,
         json=fields_to_update
     )
-    logger.info(f'Get response: {response.text}')
+    logger.info(f'Receive response: {response.text}')
     expected_user = {
         'id': user_id,
         'username': fields_to_update['username'],
@@ -155,14 +155,14 @@ def test_get_user_posts():
         'http://127.0.0.1:5000/api/v1/users/create',
         json=user_info
     )
-    logger.info(f'Get response: {response.text}')
+    logger.info(f'Receive response: {response.text}')
     user_id = response.json()['user_id']
 
     response = requests.post(
         f'http://127.0.0.1:5000/api/v1/tokens',
         auth=(user_info['username'], user_info['password'])
     )
-    logger.info(f'Get response: {response.text}')
+    logger.info(f'Receive response: {response.text}')
     token = response.json()['token']
 
     headers = {'Authorization': f'Bearer {token}'}

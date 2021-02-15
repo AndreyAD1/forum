@@ -21,13 +21,13 @@ def test_create_forum():
         'http://127.0.0.1:5000/api/v1/users/create',
         json=user_info
     )
-    logger.info(f'Get response: {response.text}')
+    logger.info(f'Receive response: {response.text}')
 
     response = requests.post(
         f'http://127.0.0.1:5000/api/v1/tokens',
         auth=(user_info['username'], user_info['password'])
     )
-    logger.info(f'Get response: {response.text}')
+    logger.info(f'Receive response: {response.text}')
     token = response.json()['token']
 
     forum_info = {
@@ -40,7 +40,7 @@ def test_create_forum():
         headers=headers,
         json=forum_info
     )
-    logger.info(f'Get response: {response.text}')
+    logger.info(f'Receive response: {response.text}')
     assert response.status_code == 201
     response_json = response.json()
     assert len(response_json) == 1
@@ -62,14 +62,14 @@ def test_get_forum():
         'http://127.0.0.1:5000/api/v1/users/create',
         json=user_info
     )
-    logger.info(f'Get response: {response.text}')
+    logger.info(f'Receive response: {response.text}')
     user_id = response.json()['user_id']
 
     response = requests.post(
         f'http://127.0.0.1:5000/api/v1/tokens',
         auth=(user_info['username'], user_info['password'])
     )
-    logger.info(f'Get response: {response.text}')
+    logger.info(f'Receive response: {response.text}')
     token = response.json()['token']
 
     forum_info = {
@@ -82,7 +82,7 @@ def test_get_forum():
         headers=headers,
         json=forum_info
     )
-    logger.info(f'Get response: {response.text}')
+    logger.info(f'Receive response: {response.text}')
     assert response.status_code == 201
     forum_id = response.json()['forum_id']
 
@@ -90,7 +90,7 @@ def test_get_forum():
         f'http://127.0.0.1:5000/api/v1/forums/{forum_id}',
         headers=headers
     )
-    logger.info(f'Get response: {response.text}')
+    logger.info(f'Receive response: {response.text}')
     assert response.status_code == 200
     expected_forum = {'id': forum_id, 'creator_id': user_id, **forum_info}
     assert response.json() == expected_forum
