@@ -14,3 +14,4 @@ database = SQLAlchemy(app, engine_options={'echo': 'debug'})
 migrate = Migrate(app, database)
 
 from app import routes, models, user_api, api_auth, api_tokens, post_api
+from app import thread_api, forum_api
