@@ -75,7 +75,7 @@ def remove_thread(thread_id):
     delete_thread_query = f"""
     UPDATE thread SET deleted = TRUE WHERE thread.id = '{thread_id}';
     UPDATE post SET deleted = TRUE, deleted_by_thread = TRUE 
-    WHERE post.thread_id = '{thread_id}'
+    WHERE post.thread_id = '{thread_id}' AND post.deleted = FALSE
     """
     database.session.execute(delete_thread_query)
     database.session.commit()
