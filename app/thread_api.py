@@ -105,7 +105,7 @@ def restore_thread():
         return bad_request(f'can not restore the thread with id {thread_id}')
 
     json_thread = {k: v for k, v in row_proxies[0].items()}
-    if token_auth.current_user().id != json_thread['user_id']:
+    if token_auth.current_user().id != json_thread['creator_id']:
         abort(403)
 
     if not json_thread['deleted']:
@@ -120,5 +120,6 @@ def restore_thread():
     database.session.commit()
     response = jsonify({'status': 'OK'})
     response.headers['Location'] = url_for('get_thread', thread_id=thread_id)
+    response.status_code = 201
     return response
 

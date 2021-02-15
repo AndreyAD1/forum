@@ -188,7 +188,7 @@ def test_restore_post():
         headers=headers
     )
     logger.info(f'Receive response: {response.text}')
-    assert response.status_code == 200
+    assert response.status_code == 201
 
     response = requests.get(
         f'http://127.0.0.1:5000/api/v1/posts/{post_id}',

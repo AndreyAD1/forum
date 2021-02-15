@@ -110,5 +110,6 @@ def restore_post():
     database.session.commit()
     response = jsonify({'status': 'OK'})
     response.headers['Location'] = url_for('get_post', post_id=post_id)
+    response.status_code = 201
     return response
 
