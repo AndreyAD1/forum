@@ -81,7 +81,8 @@ def restore_post():
     post_id = request_data['post_id']
     deleted_post_query = f"""
     SELECT
-    post.id, post.text, post.creation_timestamp, post.user_id, post.deleted
+    post.id, post.text, post.creation_timestamp, post.user_id, post.deleted,
+    post.deleted_by_thread
     FROM post WHERE post.id = '{post_id}'
     """
     query_result_proxy = database.session.execute(deleted_post_query)
@@ -95,6 +96,11 @@ def restore_post():
 
     if not json_post['deleted']:
         return bad_request(f'The post with id {post_id} is not deleted')
+
+    if json_post['deleted_by_thread']:
+        return bad_request(
+            'Can not restore the post because it belongs to deleted thread.'
+        )
 
     restore_post_query = f"""
     UPDATE post SET deleted = FALSE WHERE post.id = '{post_id}'

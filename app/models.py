@@ -82,6 +82,7 @@ class Post(database.Model):
         database.ForeignKey('thread.id')
     )
     deleted = database.Column(database.Boolean, default=False)
+    deleted_by_thread = database.Column(database.Boolean, default=False)
 
     def __repr__(self):
         return '<Post {}>'.format(self.text[:20])
@@ -106,6 +107,7 @@ class Thread(database.Model):
         database.Integer,
         database.ForeignKey('forum.id')
     )
+    deleted = database.Column(database.Boolean, default=False)
 
     def __repr__(self):
         return '<Thread {}>'.format(self.name)
