@@ -19,7 +19,7 @@ SINGLE_THREAD_QUERY_TEMPLATE = """
 
 @app.route('/api/v1/threads/create', methods=['POST'])
 @token_auth.login_required
-def create_post():
+def create_thread():
     app.logger.debug(f'Receive request: {request.data}')
     request_data = request.get_json() or {}
 

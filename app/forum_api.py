@@ -1,4 +1,4 @@
-from flask import abort, request, jsonify, url_for
+from flask import request, jsonify, url_for
 
 from app import app, database
 from app.api_auth import token_auth
@@ -16,7 +16,8 @@ FROM forum WHERE forum.id = '{}'
 """
 
 
-@app.route('/api/v1/forum/create', methods=['POST'])
+@app.route('/api/v1/forums/create', methods=['POST'])
+@token_auth.login_required
 def create_forum():
     app.logger.debug(f'Receive request: {request.data}')
     request_data = request.get_json() or {}
@@ -37,7 +38,7 @@ def create_forum():
     insert_command = f"""
     INSERT INTO forum (name, short_name, creator_id) 
     VALUES (
-    '{request_data['name']}', '{request_data['short_name']}', '{creator_id}',
+    '{request_data['name']}', '{request_data['short_name']}', '{creator_id}'
     ) 
     RETURNING forum.id
     """
