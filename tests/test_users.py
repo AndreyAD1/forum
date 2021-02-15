@@ -165,13 +165,41 @@ def test_get_user_posts():
     logger.info(f'Receive response: {response.text}')
     token = response.json()['token']
 
+    forum_info = {
+        'name': fake.company() + str(random.randint(1, 1000)),
+        'short_name': fake.company_suffix() + str(random.randint(1, 1000))
+    }
+    headers = {'Authorization': f'Bearer {token}'}
+    response = requests.post(
+        f'http://127.0.0.1:5000/api/v1/forums/create',
+        headers=headers,
+        json=forum_info
+    )
+    logger.info(f'Receive response: {response.text}')
+    assert response.status_code == 201
+    forum_id = response.json()['forum_id']
+
+    thread_info = {
+        'name': fake.company() + str(random.randint(1, 1000)),
+        'short_name': fake.company_suffix() + str(random.randint(1, 1000)),
+        'text': fake.text(),
+        'forum_id': forum_id
+    }
+    response = requests.post(
+        'http://127.0.0.1:5000/api/v1/threads/create',
+        json=thread_info,
+        headers=headers
+    )
+    logger.info(f'Receive response: {response.text}')
+    thread_id = response.json()['thread_id']
+
     headers = {'Authorization': f'Bearer {token}'}
     expected_posts = defaultdict(dict)
     for _ in range(3):
         post_text = fake.text()
         response = requests.post(
             'http://127.0.0.1:5000/api/v1/posts/create',
-            json={'text': post_text},
+            json={'text': post_text, 'thread_id': thread_id},
             headers=headers
         )
         assert response.status_code == 201
